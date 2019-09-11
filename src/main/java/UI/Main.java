@@ -3,14 +3,13 @@ package UI;
 import DataAccess.FindPathInputReaderFile;
 import DataAccess.FindPathInputReaderStdIn;
 import Logic.AStarAlgorithm;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
+
 
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        boolean GUI = false;
+        boolean GUI = true;
         if (GUI) {
             PathFinderForm pfForm = new PathFinderForm();
             pfForm.setVisible(true);

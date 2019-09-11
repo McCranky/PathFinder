@@ -21,17 +21,12 @@ public class AStarAlgorithm {
         this.closed = new ArrayList<>();
         this.path = new ArrayList<>();
         this.maze = maze;
-        this.startPoint = getPoint(Constants.BLOCK_START);
-        this.endPoint = getPoint(Constants.BLOCK_END);
+        this.startPoint = getPointInMaze(Constants.BLOCK_START);
+        this.endPoint = getPointInMaze(Constants.BLOCK_END);
         this.current = new Node(null, this.startPoint.x, this.startPoint.y, 0, 0);
     }
 
-    /**
-     * Find point based on block type (look at DataAccess.Constants under BLOCK_*)
-     * @param blockType
-     * @return (Point | null) the point
-     */
-    private Point getPoint(char blockType) {
+    private Point getPointInMaze(char blockType) {
         for (int i = 0; i < maze.length; i++) {
             for (int j = 0; j < maze[0].length; j++) {
                 if (maze[i][j] == blockType) {
@@ -53,13 +48,9 @@ public class AStarAlgorithm {
         return charPath;
     }
 
-    /**
-     * Find path from startPoint to endPoint
-     * @return (List<Node> | null) the path
-     */
     private List<Node> findPath() {
         this.closed.add(this.current);
-        addNeigborsToOpenList();
+        addNeighborsToOpenList();
         while (this.current.getX() != this.endPoint.x || this.current.getY() != this.endPoint.y) {
             if (this.open.isEmpty()) {
                 return null; // no path found
@@ -68,7 +59,7 @@ public class AStarAlgorithm {
             this.current = this.open.get(0);
             this.open.remove(0);
             this.closed.add(this.current);
-            addNeigborsToOpenList();
+            addNeighborsToOpenList();
         }
         this.path.add(0, this.current);
         while (this.current.getX() != this.startPoint.x || this.current.getY() != this.startPoint.y) {
@@ -78,45 +69,32 @@ public class AStarAlgorithm {
         return this.path;
     }
 
-    /**
-     * Check if given node is in given list
-     * @param list (List<Node>)
-     * @param node (Node)
-     * @return (bool) found
-     */
-    private  boolean findNeighborInList(List<Node> list, Node node) {
+    private  boolean findNodeInList(List<Node> list, Node node) {
         return list.stream().anyMatch((n) -> (n.getX() == node.getX() && n.getY() == node.getY()));
     }
 
-    /**
-     * distance between this.current and xend/yend
-     * @param dx
-     * @param dy
-     * @return (int) distance
-     */
-    private double distance(int dx, int dy) {
-        return Math.abs(this.current.getX() + dx - this.endPoint.x) + Math.abs(this.current.getY() + dy - this.endPoint.y); // Manhattan distance
+    private double calculateDistance(int x, int y) {
+        return Math.abs(this.current.getX() + x - this.endPoint.x) + Math.abs(this.current.getY() + y - this.endPoint.y); // Manhattan distance
     }
 
-    private void addNeigborsToOpenList() {
+    private void addNeighborsToOpenList() {
         Node node;
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 if (true && x != 0 && y != 0) {
                     continue; // because diagonal movements are not allowed
                 }
-                node = new Node(this.current, this.current.getX() + x, this.current.getY() + y, this.current.getG(), this.distance(x, y));
+                node = new Node(this.current, this.current.getX() + x, this.current.getY() + y, this.current.getG(), calculateDistance(x, y));
                 if ((x != 0 || y != 0)
                         && this.current.getX() + x >= 0 && this.current.getX() + x < this.maze[0].length // check boundaries
                         && this.current.getY() + y >= 0 && this.current.getY() + y < this.maze.length
                         && this.maze[this.current.getY() + y][this.current.getX() + x] != Constants.BLOCK_BLOCKED // check if square is walkable
-                        && !findNeighborInList(this.open, node) && !findNeighborInList(this.closed, node)) { // if not already done
+                        && !findNodeInList(this.open, node) && !findNodeInList(this.closed, node)) { // if not already done
                     node.setG(node.getParent().getG() + 1.); // Horizontal/vertical cost = 1.0
                     this.open.add(node);
                 }
             }
         }
-
-        Collections.sort(this.open);
+        Collections.sort(this.open); // sorting by cost (from lowest)
     }
 }
